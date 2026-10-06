@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+if [ "${1:-}" = configure ]; then
+ /usr/bin/python3 -B /usr/share/saveconfig/tools_cleanup.py configure
+fi
+exit 0

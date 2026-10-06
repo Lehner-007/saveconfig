@@ -1,0 +1,108 @@
+name: saveconfig DEB release
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag
+        required: true
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+concurrency:
+  group: saveconfig-deb-release
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Select existing version tag
+        env:
+          REQUESTED_TAG: ${{ inputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -n "$REQUESTED_TAG" ]]; then
+            tag="$REQUESTED_TAG"
+          elif [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            tag="${GITHUB_REF#refs/tags/}"
+          else
+            echo "A version tag is required."
+            exit 1
+          fi
+          [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          git rev-parse --verify "refs/tags/$tag^{commit}"
+          git checkout --detach "refs/tags/$tag"
+          version=$(python3 -B -c "import ast; t=ast.parse(open('saveconfig/__init__.py').read()); print(next(ast.literal_eval(n.value) for n in t.body if isinstance(n,ast.Assign) and any(isinstance(x,ast.Name) and x.id=='VERSION' for x in n.targets)))")
+          [[ "v$version" == "$tag" ]]
+          echo "RELEASE_TAG=$tag" >> "$GITHUB_ENV"
+          echo "DEB_NAME=saveconfig_${tag#v}_all.deb" >> "$GITHUB_ENV"
+      - name: Build DEB from tag
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y python3 desktop-file-utils
+          mkdir -p dist
+          ./erstelledeb.sh
+      - name: Verify packaged source files
+        run: |
+          python3 - <<'PY'
+          import io, os, subprocess, tarfile, hashlib
+          from pathlib import Path
+          package = Path('dist') / os.environ['DEB_NAME']
+          import ast
+          tree = ast.parse(Path('saveconfig/__init__.py').read_text())
+          version = next(ast.literal_eval(n.value) for n in tree.body if isinstance(n, ast.Assign) and any(isinstance(x, ast.Name) and x.id == 'VERSION' for x in n.targets))
+          assert subprocess.check_output(['dpkg-deb','-f',str(package),'Version'],text=True).strip() == version
+          with tarfile.open(fileobj=io.BytesIO(subprocess.check_output(['dpkg-deb','--fsys-tarfile',str(package)]))) as archive:
+              for entry in archive.getmembers():
+                  prefix = './usr/share/saveconfig/'
+                  if entry.isfile() and entry.name.startswith(prefix):
+                      source = Path(entry.name[len(prefix):])
+                      assert archive.extractfile(entry).read() == source.read_bytes(), str(source)
+          digest = hashlib.sha256(package.read_bytes()).hexdigest()
+          Path('dist/SHA256SUMS').write_text(f'{digest}  {package.name}\n')
+          PY
+      - name: Prepare verified download metadata
+        run: python3 packaging/prepare_update.py "dist/$DEB_NAME" dist/version.json
+      - name: Attach DEB and publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Existing release found; preserving its title and notes."
+          else
+            gh release create "$RELEASE_TAG" --verify-tag --draft \
+              --title "saveconfig ${RELEASE_TAG#v}" \
+              --notes-file github/release-notes.md
+          fi
+          # Do not overwrite existing release assets.
+          gh release upload "$RELEASE_TAG" "dist/$DEB_NAME" dist/SHA256SUMS dist/version.json
+          gh release edit "$RELEASE_TAG" --draft=false
+
+      - name: Publish matching update metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          python3 - <<'PYCODE'
+          import base64,json,os,subprocess,re
+          from pathlib import Path
+          repo=os.environ['GH_REPO']
+          def read(path):
+              return json.loads(subprocess.check_output(['gh','api',f'repos/{repo}/contents/{path}?ref=main'],text=True))
+          main_version=re.search(r"^VERSION = '([0-9]+\.[0-9]+\.[0-9]+)'$",base64.b64decode(read('saveconfig/__init__.py')['content']).decode(),re.M).group(1)
+          version=re.search(r"^VERSION = '([0-9]+\.[0-9]+\.[0-9]+)'$",Path('saveconfig/__init__.py').read_text(),re.M).group(1)
+          if main_version!=version:
+              raise SystemExit('Main has a different version; preserve its update metadata.')
+          old=read('github/version.json')
+          payload={'message':f'Update verified download metadata for {version}', 'branch':'main', 'sha':old['sha'], 'content':base64.b64encode(Path('dist/version.json').read_bytes()).decode()}
+          subprocess.run(['gh','api','--method','PUT',f'repos/{repo}/contents/github/version.json','--input','-'],input=json.dumps(payload),text=True,check=True,stdout=subprocess.DEVNULL)
+          PYCODE

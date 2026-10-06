@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=saveconfig
+Comment=Scan, back up and verify application configurations
+Comment[de]=Programmkonfigurationen suchen, sichern und prüfen
+Exec=saveconfig
+Icon=/usr/share/saveconfig/resources/icon.png
+Terminal=false
+Categories=Utility;Archiving;
+StartupNotify=true
+X-Saveconfig-Managed=true
