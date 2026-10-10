@@ -1,3 +1,8 @@
+## 0.8.4
+
+- Alle zehn Hilfesprachen verwenden eine aktuelle, platzsparende Kopie des Programmbilds.
+- DEB liefert dasselbe aktuelle Motiv für Hilfe und Desktop-Symbol.
+
 ## 0.8.3
 
 - Neues saveconfig-Bild als Symbol für Menü- und Desktop-Starter im DEB.

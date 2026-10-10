@@ -1,9 +1,9 @@
 {
   "program_id": "saveconfig",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "deb": {
-    "url": "https://github.com/Lehner-007/saveconfig/releases/download/v0.8.3/saveconfig_0.8.3_all.deb",
-    "filename": "saveconfig_0.8.3_all.deb",
-    "sha256": "c61a30351a793151f6228f8de8c09344307356350a08b3afe543912c20bf12bd"
+    "url": "https://github.com/Lehner-007/saveconfig/releases/download/v0.8.4/saveconfig_0.8.4_all.deb",
+    "filename": "saveconfig_0.8.4_all.deb",
+    "sha256": "90864fa45f1bf94316ade0958866190d524c2e53172423aa11fbeb978f5e8279"
   }
 }

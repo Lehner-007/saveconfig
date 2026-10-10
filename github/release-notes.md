@@ -1,5 +1,5 @@
-# saveconfig 0.8.3
+# saveconfig 0.8.4
 
-Neues saveconfig-Bild als Menü- und Desktop-Symbol im DEB. Das Programmlogo verwendet ebenfalls das neue Motiv.
+Das aktuelle saveconfig-Bild wird jetzt auch in der deutschen und englischen Offline-Hilfe sowie in den acht zusätzlichen Hilfepaketen angezeigt. Die veraltete eingebettete Bildkopie wurde ersetzt. Das DEB enthält das aktuelle Menü-/Desktop-Symbol.
 
-76 Tests bestanden. DEB-Symbol, Paketversion und entpackter Start geprüft. Deutsch und Englisch enthalten; acht weitere Sprach-/Hilfepakete nachladbar.
+Sprachpaketvalidierung, eingebettete Hilfebilder und DEB-Inhalt geprüft. Zusatzübersetzungen benötigen weiterhin eine Muttersprachlerprüfung.

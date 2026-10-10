@@ -1,6 +1,7 @@
 import json,tempfile,unittest
 from pathlib import Path
 from saveconfig.languages import Languages
+from saveconfig import VERSION
 from saveconfig.settings import Settings
 ROOT=Path(__file__).resolve().parents[1]
 class LanguagePublicationTests(unittest.TestCase):
@@ -12,7 +13,7 @@ class LanguagePublicationTests(unittest.TestCase):
    for path in packs:
     if path.stem=='catalog':continue
     pack=json.loads(path.read_text());languages.validate(pack)
-    self.assertEqual(pack['application_version'],'0.8.2')
+    self.assertEqual(pack['application_version'],VERSION)
     self.assertIn('data:image/png;base64,',pack['help_html'])
     self.assertIn('F1',pack['help_html'])
    pack=json.loads((ROOT/'github/sprachpakete/fr.json').read_text())
