@@ -11,7 +11,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-DESKTOP = '[Desktop Entry]\nType=Application\nName=saveconfig\nComment=Scan, back up and verify application configurations\nComment[de]=Programmkonfigurationen suchen, sichern und prüfen\nExec=saveconfig\nIcon=/usr/share/saveconfig/resources/icon.png\nTerminal=false\nCategories=Utility;Archiving;\nStartupNotify=true\n'
+DESKTOP = '[Desktop Entry]\nType=Application\nName=saveconfig\nComment=Scan, back up and verify application configurations\nComment[de]=Programmkonfigurationen suchen, sichern und prüfen\nExec=saveconfig\nIcon=/usr/share/saveconfig/resources/saveconfig-icon.png\nTerminal=false\nCategories=Utility;Archiving;\nStartupNotify=true\n'
 
 MANAGED = DESKTOP + 'X-Saveconfig-Managed=true\n'
 

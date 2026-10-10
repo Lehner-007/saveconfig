@@ -1,3 +1,7 @@
+## 0.8.3
+
+- Neues saveconfig-Bild als Symbol für Menü- und Desktop-Starter im DEB.
+
 # 0.8.2
 
 - Hilfe einheitlich über Hilfe → Hilfe und F1 erreichbar; Hinweis in DE/EN.

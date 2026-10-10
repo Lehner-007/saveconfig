@@ -7,8 +7,6 @@ on:
         required: true
   push:
     tags: ['v*']
-    branches: ['main']
-    paths: ['github/release-request.json']
 permissions:
   contents: write
 concurrency:
